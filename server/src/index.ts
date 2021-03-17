@@ -7,6 +7,6 @@ const wsServer = new WebSocket.Server({
 })
 
 wsServer.on('connection', (_socket, _req) => {
-    console.log("Connection received");
+    // remember client or something
 })
 
