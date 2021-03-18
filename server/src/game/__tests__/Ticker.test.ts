@@ -1,5 +1,5 @@
 import EventEmitter from "node:events";
-import Ticker from "./Ticker";
+import Ticker from "../Ticker";
 
 /**
  * Ticks as fast as possible.
