@@ -1,4 +1,4 @@
-import EventEmitter from "node:events";
+import EventEmitter from "events";
 import Ticker from "./Ticker";
 
 type FoxState =

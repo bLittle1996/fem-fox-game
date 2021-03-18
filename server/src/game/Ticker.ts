@@ -13,65 +13,81 @@ class Ticker extends EventEmitter {
   /**
    * The timestamp (in milliseconds) when the last tick occurred.
    */
-  lastTickTime = -1;
+  protected lastTickTime = -1;
+  /**
+   *
+   */
+  isTicking = false;
   /**
    * The rate (in milliseconds) that ticks should occur at.
    */
-  protected _tickInterval?: number;
-  scheduledTickImmediate?: NodeJS.Immediate;
+  protected _tickInterval = 1;
+  /**
+   * Used to allow us to clearTimeout to prevent infinite ticking even after stopping.
+   */
+  scheduledTickTimeout?: NodeJS.Timeout;
 
   constructor(options?: TickerOptions) {
     super();
-    this.tickInterval = options?.tickInterval;
+
+    if (isNumber(options?.tickInterval)) {
+      this.tickInterval = options?.tickInterval as number; // We are casting here because the isNumber guard above guarantees the the property will be a number
+    }
   }
 
-  tick() {
+  tick(): void {
     const now = Date.now();
     const deltaTime = now - this.lastTickTime;
     /**
-     * If we have no  tick interval defined, we should tick all the damn time.
-     *
-     * If we do have a tick interval defined, we should only tick if the requisite amount of time
+     * We should only tick if the requisite amount of time
      * has passed since the last tick.
      */
-    if (
-      !isDefined(this.tickInterval) ||
-      (isDefined(this.tickInterval) &&
-        deltaTime - this.lastTickTime > this.tickInterval)
-    ) {
+    if (deltaTime >= this.tickInterval) {
       this.emit("tick", Date.now());
+      this.ticks += 1;
+      this.lastTickTime = now;
     }
-    // Add a request to tick in the check queue, so that we continiously tick.
-    this.scheduledTickImmediate = setImmediate(this.tick.bind(this));
+
+    if (this.isTicking) {
+      // Add a request to tick in the check queue, so that we continiously tick.
+      // Note that we will always tick every millisecond, instead of passing in the delay.
+      // This allows for the user to change the tick interval and have it be reflected immediately,
+      // instead of having to wait for the previous tick delay to pass.
+      this.scheduledTickTimeout = setTimeout(this.tick.bind(this), 1);
+    }
   }
 
-  start() {
+  start(): void {
+    if (this.isTicking) return;
+
     this.emit("started");
+    this.isTicking = true;
     this.tick();
-
-    this.once;
   }
 
-  stop() {
-    if (!isDefined(this.scheduledTickImmediate)) {
-      // still send the event even if we haven't ticked yet.
-      this.emit("stopped", this);
-      return;
-    }
+  stop(): void {
+    if (!this.isTicking) return;
 
-    clearImmediate(this.scheduledTickImmediate);
+    if (isDefined(this.scheduledTickTimeout)) {
+      clearTimeout(this.scheduledTickTimeout);
+      this.scheduledTickTimeout = undefined;
+    }
     this.emit("stopped", this);
+    this.isTicking = false;
   }
 
   /**
    *
    * @param interval The time between ticks in milliseconds. Negative numbers will result in an interval of zero milliseconds.
    */
-  public set tickInterval(interval: number | undefined) {
-    this._tickInterval = isNumber(interval) ? Math.max(0, interval) : undefined;
+  public set tickInterval(interval: number) {
+    if (interval <= 0) {
+      throw new RangeError("Must provide a number >= 1 as the `tickInterval`.");
+    }
+    this._tickInterval = interval;
   }
 
-  public get tickInterval() {
+  public get tickInterval(): number {
     return this._tickInterval;
   }
 }
