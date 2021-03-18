@@ -9,11 +9,11 @@ class Ticker extends EventEmitter {
   /**
    * The number of ticks that have occurred since the ticker was created.
    */
-  ticks: number = 0;
+  ticks = 0;
   /**
    * The timestamp (in milliseconds) when the last tick occurred.
    */
-  lastTickTime: number = -1;
+  lastTickTime = -1;
   /**
    * The rate (in milliseconds) that ticks should occur at.
    */

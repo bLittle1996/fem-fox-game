@@ -1,5 +1,4 @@
 import EventEmitter from "node:events";
-import { createMachine, interpret, Interpreter } from "xstate";
 import Ticker from "./Ticker";
 
 type FoxState =
