@@ -180,6 +180,21 @@ describe(Ticker, () => {
       expect(secondTicker.ticks).toBe(4);
     });
 
+    it("exposes the current tick number in the tick", () => {
+      secondTicker.on("tick", onTick);
+      secondTicker.start(); // calls starts ticks under the hood
+      expect(onTick).toHaveBeenLastCalledWith(1);
+      nextDateNowResult(defaultDateNowResult + 1000); // tell Date.now that 1s has passed :)
+      jest.advanceTimersToNextTimer();
+      expect(onTick).toHaveBeenLastCalledWith(2);
+      nextDateNowResult(defaultDateNowResult + 2000); // tell Date.now that 1s has passed :)
+      jest.advanceTimersToNextTimer();
+      expect(onTick).toHaveBeenLastCalledWith(3);
+      nextDateNowResult(defaultDateNowResult + 3000); // tell Date.now that 1s has passed :)
+      jest.advanceTimersToNextTimer();
+      expect(onTick).toHaveBeenLastCalledWith(4);
+    });
+
     it("schedules a tick if the ticker is running", () => {
       ticker.on("tick", onTick);
       ticker.tick();

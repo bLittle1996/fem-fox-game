@@ -43,9 +43,9 @@ class Ticker extends EventEmitter {
      * has passed since the last tick.
      */
     if (deltaTime >= this.tickInterval) {
-      this.emit("tick", Date.now());
       this.ticks += 1;
       this.lastTickTime = now;
+      this.emit("tick", this.ticks);
     }
 
     if (this.isTicking) {

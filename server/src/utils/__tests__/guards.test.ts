@@ -29,6 +29,7 @@ describe("guards", () => {
       expect(isNumber(0b001000101)).toBe(true);
       expect(isNumber(10e-1)).toBe(true);
       expect(isNumber(0xba55)).toBe(true);
+      expect(isNumber(NaN)).toBe(true);
     });
 
     it("returns `false` if a number is not passed in", () => {
