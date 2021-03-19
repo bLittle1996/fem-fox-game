@@ -4,9 +4,11 @@ import {
   FoxState,
   GameState,
   TickAction,
+  TickActionMap,
   TimeOfDay,
   WeatherType,
 } from "./types";
+import { createTickActionMap } from "./utils";
 
 export default class Game extends EventEmitter {
   // Game state parameters
@@ -15,6 +17,7 @@ export default class Game extends EventEmitter {
   protected time: TimeOfDay = "day";
   // internal utilities and trackers
   protected gameClock: Ticker = new Ticker();
+  protected scheduledTickActions: TickActionMap = createTickActionMap();
 
   constructor() {
     super();
@@ -30,12 +33,25 @@ export default class Game extends EventEmitter {
     };
   }
 
-  processTick(tickNumber: number): void {}
+  processTick(tickNumber: number): void {
+    this.scheduledTickActions[tickNumber].forEach((action) => {
+      action(this.getState());
+    });
+  }
 
-  scheduleTickAction(
-    tickNumber: number,
-    action: TickAction
-  ): UnscheduleActionFunction {
+  scheduleTickAction(tickNumber: number, action: TickAction): () => void {
+    this.scheduledTickActions[tickNumber] = [
+      ...this.scheduledTickActions[tickNumber],
+      action,
+    ];
+
+    // Remove the passed in action from the schedule map.
+    const unscheduleTickAction = (tickAction: TickAction): void => {
+      this.scheduledTickActions[tickNumber] = this.scheduledTickActions[
+        tickNumber
+      ].filter((action) => action !== tickAction);
+    };
+
     return () => unscheduleTickAction(action);
   }
 

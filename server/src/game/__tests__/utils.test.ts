@@ -41,4 +41,32 @@ describe(createTickActionMap, () => {
     // @ts-expect-error We are intentionally passing in non-numeric keys. Because we want to test that case!
     expect(myMap["10word"]).toBeNull();
   });
+
+  it("only allows numeric keys to be set to a function array", () => {
+    const myMap = createTickActionMap();
+    const validFunction = () => {
+      /* wow */
+    };
+
+    expect(() => {
+      // @ts-expect-error We are intentionally passing in non-function[] values. Because we want to test that case!
+      myMap[0] = "let me iiiiiin";
+    }).toThrowError(TypeError);
+
+    expect(() => {
+      // @ts-expect-error We are intentionally passing in non-function[] values. Because we want to test that case!
+      myMap[-50] = ["i", "sneak"];
+    }).toThrowError(TypeError);
+
+    expect(() => {
+      myMap[-50] = [];
+    }).not.toThrowError(TypeError);
+
+    expect(() => {
+      myMap[Infinity] = [validFunction];
+    }).not.toThrowError();
+
+    expect(myMap[Infinity]).toEqual([validFunction]);
+    expect(myMap[-50]).toEqual([]);
+  });
 });
