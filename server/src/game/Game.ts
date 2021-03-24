@@ -7,6 +7,7 @@ import {
   TickActionMap,
   TimeOfDay,
   WeatherType,
+  UnscheduleTickActionsFunction,
 } from "./types";
 import { createTickActionMap } from "./utils";
 
@@ -34,30 +35,35 @@ export default class Game extends EventEmitter {
   }
 
   processTick(tickNumber: number): void {
+    // Call all the callbacks
     this.scheduledTickActions[tickNumber].forEach((action) => {
       action(this.getState());
     });
+    // and clear them out
+    this.scheduledTickActions[tickNumber] = [];
   }
 
-  scheduleTickAction(tickNumber: number, action: TickAction): () => void {
+  scheduleTickAction(
+    tickNumber: number,
+    ...actions: TickAction[]
+  ): UnscheduleTickActionsFunction {
     this.scheduledTickActions[tickNumber] = [
       ...this.scheduledTickActions[tickNumber],
-      action,
+      ...actions,
     ];
 
     // Remove the passed in action from the schedule map.
-    const unscheduleTickAction = (tickAction: TickAction): void => {
+    const unscheduleTickActions = (): void => {
       this.scheduledTickActions[tickNumber] = this.scheduledTickActions[
         tickNumber
-      ].filter((action) => action !== tickAction);
+      ].filter((action) => !actions.includes(action));
     };
 
-    return () => unscheduleTickAction(action);
+    return unscheduleTickActions;
   }
 
   /**
    * Called automatically when JSON.stringify is used on an instance.
-   * @returns
    */
   toJSON(): GameState {
     return this.getState();

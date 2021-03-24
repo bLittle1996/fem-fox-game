@@ -24,3 +24,5 @@ export type TickAction = (state: GameState) => void;
 export interface TickActionMap {
   [tick: number]: TickAction[];
 }
+
+export type UnscheduleTickActionsFunction = () => void;

@@ -2,6 +2,8 @@ import { TickAction, TickActionMap } from "./types";
 
 export const createTickActionMap = (): TickActionMap => {
   const map: TickActionMap = {};
+  // This is solely to adhere to the interface of TickActionMap - which does not allow for undefined values for keys
+  // I wouldn't actually recommend doing this,
   const proxy = new Proxy(map, {
     get: (target, prop: string | symbol): TickAction[] | null => {
       // Symbols can't be turned into numbers
@@ -21,6 +23,7 @@ export const createTickActionMap = (): TickActionMap => {
         !Array.isArray(value) ||
         !value.every((v) => v instanceof Function)
       ) {
+        console.log("IT WAS Me");
         return false;
       }
       // convert requested key to a number
